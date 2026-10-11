@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ m.subject }}{% endblock %}
+{% block content %}
+<a class="small" href="{{ url_for('messages.inbox', box='inbox' if m.receiverId == mine else 'sent') }}">&larr; Back to messages</a>
+<div class="panel mt-2">
+  <div class="d-flex flex-wrap justify-content-between gap-2">
+    <h1 class="h4">{{ m.subject }}</h1>{{ status_badge(m.status) }}
+  </div>
+  <p class="text-muted mb-3">From <strong>{{ users[m.senderId].name if m.senderId in users else m.senderId }}</strong> to <strong>{{ users[m.receiverId].name if m.receiverId in users else m.receiverId }}</strong>
+    &middot; about {{ student.name if student else m.studentId }} &middot; {{ m.sentDate|dt }}</p>
+  <p class="message-body">{{ m.message }}</p>
+  {% if m.receiverId == mine %}<a class="btn btn-primary" href="{{ url_for('messages.compose', reply_to=m.messageId) }}">Reply</a>{% endif %}
+</div>
+{% endblock %}

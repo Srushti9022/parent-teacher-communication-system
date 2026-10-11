@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import attendance_summary, status_badge, pct_badge %}
+{% block title %}Attendance{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Attendance</h1><p class="text-muted">{{ child.name }} &middot; Class {{ child.className }}{{ child.section }} &middot; Overall {{ pct_badge(overall) }}</p>
+{% if records %}
+<div class="panel mb-4"><h2 class="h5">By subject</h2>{{ attendance_summary(summary) }}<p class="text-muted small mt-2 mb-0">Green is 85% or more, amber 75-84%, red below 75%.</p></div>
+<div class="panel"><h2 class="h5">All records</h2>
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+    <tbody>{% for a in records %}<tr><td>{{ a.date|d }}</td><td>{{ subjects[a.subjectId].subjectName if a.subjectId in subjects else a.subjectId }}</td><td>{{ status_badge(a.status) }}</td></tr>{% endfor %}</tbody>
+  </table></div></div>
+{% else %}<div class="panel text-muted">No attendance has been recorded yet.</div>{% endif %}
+{% endblock %}

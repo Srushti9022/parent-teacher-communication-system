@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div><h1 class="h3 mb-0">{{ title }}</h1><span class="text-muted">{{ total }} record{{ '' if total == 1 else 's' }}</span></div>
+  {% if filters %}
+  <form method="get" class="row g-2 align-items-end">
+    {% for f in filters %}<div class="col-auto"><label class="form-label small mb-0" for="f-{{ f.name }}">{{ f.label }}</label>
+      {% if f.text %}<input class="form-control form-control-sm" id="f-{{ f.name }}" name="{{ f.name }}" value="{{ request.args.get(f.name, '') }}">
+      {% else %}<select class="form-select form-select-sm" id="f-{{ f.name }}" name="{{ f.name }}"><option value="">All</option>{% for o in f.options %}<option {{ 'selected' if request.args.get(f.name) == o }}>{{ o }}</option>{% endfor %}</select>{% endif %}</div>{% endfor %}
+    <div class="col-auto"><button class="btn btn-sm btn-primary">Filter</button> <a class="btn btn-sm btn-outline-secondary" href="{{ url_for(request.endpoint) }}">Clear</a></div>
+  </form>{% endif %}
+</div>
+<div class="panel">
+  {% if rows %}
+  <div class="table-responsive"><table class="table table-hover table-sm align-middle mb-3">
+    <thead><tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in rows %}<tr>{% for cell in row %}<td>{% if cell is mapping %}<span class="badge text-bg-{{ cell.badge }}">{{ cell.text }}</span>{% else %}{{ cell }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+  {{ pager(page, pages) }}
+  {% else %}<p class="text-muted mb-0">Nothing matches these filters.</p>{% endif %}
+</div>
+{% endblock %}

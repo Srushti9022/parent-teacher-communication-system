@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pct_badge, notice %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-0">{{ child.name }}</h1>
+    <span class="text-muted">{{ child.studentId }} &middot; Class {{ child.className }}{{ child.section }} &middot; Roll {{ child.rollNumber }} &middot; {{ child.academicYear }}</span></div>
+  <a class="btn btn-primary" href="{{ url_for('messages.compose') }}">Message a teacher</a>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ pct_badge(attendance_pct) }}</div><div class="text-muted">Attendance ({{ attendance_count }} records){% if last_date %}<br><span class="small">Last recorded {{ last_date|d }}</span>{% endif %}</div></div></div>
+  {% for exam, data in exams.items() %}<div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ data.average }}%</div><div class="text-muted">{{ exam }} average</div></div></div>{% endfor %}
+  <div class="col-6 col-lg-3"><a class="panel stat d-block text-decoration-none text-reset" href="{{ url_for('messages.inbox') }}"><div class="stat-number">{{ unread }}</div><div class="text-muted">Unread messages</div></a></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-7"><div class="panel">
+    <div class="d-flex justify-content-between"><h2 class="h5">Latest notifications</h2><a href="{{ url_for('parent.notifications') }}">See all</a></div>
+    {% for n in notices %}{{ notice(n, none) }}{% else %}<p class="text-muted">No notifications for your child's class yet.</p>{% endfor %}
+  </div></div>
+  <div class="col-lg-5"><div class="panel">
+    <h2 class="h5">Class teacher</h2>
+    {% if class_teacher %}<p class="mb-0">{{ class_teacher.name }}<br><span class="text-muted">{{ class_teacher.email }}</span></p>{% else %}<p class="text-muted mb-0">No class teacher is recorded.</p>{% endif %}
+    <hr><a href="{{ url_for('parent.marks') }}">View all marks</a> &middot; <a href="{{ url_for('parent.attendance') }}">View attendance</a>
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import notice %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Admin dashboard</h1>
+<div class="row g-3 mb-4">
+  {% for label, value in stats.items() %}<div class="col-6 col-md-4 col-xl-2"><div class="panel stat"><div class="stat-number">{{ value }}</div><div class="text-muted">{{ label }}</div></div></div>{% endfor %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-7"><div class="panel">
+    <h2 class="h5">Classes</h2>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Class</th><th>Class teacher</th><th class="text-end">Students</th><th class="text-end">Capacity</th></tr></thead>
+      <tbody>{% for row in classes %}<tr><td>{{ row.c.classname }}{{ row.c.section }}</td><td>{{ row.teacher }}</td><td class="text-end">{{ row.students }}</td><td class="text-end">{{ row.c.studentcapacity }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div></div>
+  <div class="col-lg-5">
+    <div class="panel mb-4"><h2 class="h5">Accounts</h2>
+      <ul class="list-unstyled mb-0">{% for role, n in roles.items() %}<li class="d-flex justify-content-between border-bottom py-1"><span>{{ role }}</span><strong>{{ n }}</strong></li>{% endfor %}</ul>
+      <p class="text-muted small mt-2 mb-0">Student accounts exist in the database but cannot sign in to this portal.</p></div>
+    <div class="panel"><h2 class="h5">Latest notifications</h2>
+      {% for n in recent %}{{ notice(n, none) }}{% endfor %}
+      <a href="{{ url_for('admin.notifications') }}">All notifications</a></div>
+  </div>
+</div>
+{% endblock %}

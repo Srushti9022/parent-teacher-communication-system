@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}New message{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">New message</h1>
+<form method="post" class="panel" style="max-width: 720px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="mb-3">
+    {% if role == 'Parent' %}
+    <label class="form-label" for="to">To (your child's teacher)</label>
+    <select class="form-select" id="to" name="to" required><option value="">Choose a teacher...</option>
+      {% for c in choices %}<option value="{{ c.teacher.teacherId }}" {{ 'selected' if form.to == c.teacher.teacherId }}>{{ c.teacher.name }} - {{ c.label }}</option>{% endfor %}</select>
+    {% else %}
+    <label class="form-label" for="to">About student (the message goes to their parent)</label>
+    <select class="form-select" id="to" name="to" required><option value="">Choose a student...</option>
+      {% for s in choices %}<option value="{{ s.studentId }}" {{ 'selected' if form.to == s.studentId }}>Class {{ s.className }}{{ s.section }} - {{ s.rollNumber }}. {{ s.name }}</option>{% endfor %}</select>
+    {% endif %}
+  </div>
+  <div class="mb-3"><label class="form-label" for="subject">Subject</label><input class="form-control" id="subject" name="subject" maxlength="100" minlength="3" value="{{ form.subject }}" required></div>
+  <div class="mb-3"><label class="form-label" for="message">Message</label><textarea class="form-control" id="message" name="message" rows="6" maxlength="1000" minlength="5" required>{{ form.message }}</textarea><div class="form-text">Up to 1000 characters.</div></div>
+  <button class="btn btn-primary">Send message</button> <a class="btn btn-outline-secondary" href="{{ url_for('messages.inbox') }}">Cancel</a>
+</form>
+{% endblock %}

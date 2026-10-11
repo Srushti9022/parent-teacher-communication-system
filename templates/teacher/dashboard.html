@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Teacher dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Welcome, {{ sc.teacher.name }}</h1>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ student_count }}</div><div class="text-muted">Students you can see</div></div></div>
+  <div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ sc.subjects|length }}</div><div class="text-muted">Subjects you teach</div></div></div>
+  <div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ sc.led_classes|length }}</div><div class="text-muted">Classes you lead</div></div></div>
+  <div class="col-6 col-lg-3"><a class="panel stat d-block text-decoration-none text-reset" href="{{ url_for('messages.inbox') }}"><div class="stat-number">{{ unread }}</div><div class="text-muted">Unread messages</div></a></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-5"><div class="panel">
+    <h2 class="h5">Your responsibilities</h2>
+    <p class="mb-1 fw-semibold">Class teacher of</p>
+    <p>{% for c in sc.led_classes %}Class {{ c.classname }}{{ c.section }}{{ ', ' if not loop.last }}{% else %}<span class="text-muted">No class</span>{% endfor %}</p>
+    <p class="mb-1 fw-semibold">Subjects taught</p>
+    <ul class="mb-3">{% for s in sc.subjects %}<li>{{ s.subjectName }} - Class {{ s.className }} (all sections)</li>{% else %}<li class="text-muted">None</li>{% endfor %}</ul>
+    <a class="btn btn-sm btn-primary" href="{{ url_for('teacher.marks') }}">Enter marks</a>
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('teacher.attendance') }}">Take attendance</a>
+  </div></div>
+  <div class="col-lg-7"><div class="panel">
+    <div class="d-flex justify-content-between"><h2 class="h5">Latest messages from parents</h2><a href="{{ url_for('messages.compose') }}">New message</a></div>
+    {% for m in recent %}
+    <a class="msg-row {{ 'unread' if m.status == 'Sent' }}" href="{{ url_for('messages.view', message_id=m.messageId) }}">
+      <div><strong>{{ users[m.senderId].name if m.senderId in users else m.senderId }}</strong> about {{ students[m.studentId].name if m.studentId in students else m.studentId }}</div>
+      <div class="text-truncate">{{ m.subject }}</div><div class="text-muted small">{{ m.sentDate|dt }}</div>
+    </a>
+    {% else %}<p class="text-muted">No messages yet.</p>{% endfor %}
+  </div></div>
+</div>
+{% endblock %}

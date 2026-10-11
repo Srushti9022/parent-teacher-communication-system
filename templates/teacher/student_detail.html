@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import marks_table, attendance_summary %}
+{% block title %}{{ s.name }}{% endblock %}
+{% block content %}
+<a class="small" href="{{ url_for('teacher.students', class_id=class_id) }}">&larr; Back to students</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-3">
+  <div><h1 class="h3 mb-0">{{ s.name }}</h1>
+    <span class="text-muted">{{ s.studentId }} &middot; Class {{ s.className }}{{ s.section }} &middot; Roll {{ s.rollNumber }} &middot; {{ s.academicYear }}</span></div>
+  <a class="btn btn-primary" href="{{ url_for('messages.compose', to=s.studentId) }}">Message parent</a>
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="panel mb-4"><h2 class="h5">Parent</h2>
+      {% if parent %}<p class="mb-0">{{ parent.name }} ({{ parent.relation }})<br>{{ parent.phone }}<br>{{ parent.email }}</p>
+      {% else %}<p class="text-muted mb-0">No active parent record is linked to this student.</p>{% endif %}</div>
+    <div class="panel mb-4"><h2 class="h5">Attendance</h2>
+      {% if attendance %}{{ attendance_summary(attendance) }}{% else %}<p class="text-muted mb-0">No attendance records.</p>{% endif %}</div>
+    {% if editable %}<div class="panel"><h2 class="h5">Update records</h2>
+      {% for sid, name in editable.items() %}
+      <p class="mb-2">{{ name }}: <a href="{{ url_for('teacher.marks', target=class_id ~ ':' ~ sid) }}">marks</a> &middot; <a href="{{ url_for('teacher.attendance', target=class_id ~ ':' ~ sid) }}">attendance</a></p>
+      {% endfor %}</div>{% endif %}
+  </div>
+  <div class="col-lg-8">
+    {% if not is_class_teacher %}<p class="text-muted small">You can see only the subjects you teach for this student.</p>{% endif %}
+    {% for exam, data in exams.items() %}{{ marks_table(exam, data) }}{% else %}<div class="panel text-muted">No marks recorded.</div>{% endfor %}
+    {% if absences %}<div class="panel"><h2 class="h5">Latest absences</h2>
+      <ul class="mb-0">{% for a in absences %}<li>{{ a.date|d }} - {{ subjects[a.subjectId].subjectName if a.subjectId in subjects else a.subjectId }}</li>{% endfor %}</ul></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

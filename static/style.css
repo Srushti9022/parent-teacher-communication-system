@@ -1,0 +1,34 @@
+:root {
+  --ink: #14293d;
+  --teal: #17776f;
+  --teal-dark: #115f58;
+  --paper: #f3f5f7;
+  --line: #dde3ea;
+  --amber: #c98a12;
+  --bs-primary: #17776f;
+  --bs-primary-rgb: 23, 119, 111;
+  --bs-link-color: #115f58;
+  --bs-link-hover-color: #0b4540;
+  --bs-body-font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+body { background: var(--paper); color: #1d2b3a; }
+.app-nav { background: var(--ink); }
+.app-nav .nav-link.active { color: #fff; border-bottom: 2px solid var(--amber); }
+.btn-primary { --bs-btn-bg: var(--teal); --bs-btn-border-color: var(--teal); --bs-btn-hover-bg: var(--teal-dark);
+  --bs-btn-hover-border-color: var(--teal-dark); --bs-btn-active-bg: var(--teal-dark); --bs-btn-active-border-color: var(--teal-dark); }
+.btn-outline-primary { --bs-btn-color: var(--teal); --bs-btn-border-color: var(--teal); --bs-btn-hover-bg: var(--teal);
+  --bs-btn-hover-border-color: var(--teal); --bs-btn-active-bg: var(--teal-dark); }
+.text-bg-primary { background-color: var(--teal) !important; }
+.panel { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem 1.25rem; }
+.stat { height: 100%; }
+.stat-number { font-size: 1.9rem; font-weight: 600; line-height: 1.2; }
+.table > :not(caption) > * > * { padding-top: .5rem; padding-bottom: .5rem; }
+.notice { border-left: 4px solid var(--line); padding: .5rem .75rem; margin-bottom: .75rem; background: #fafbfc; }
+.notice.priority-high { border-left-color: #b42318; }
+.notice.priority-normal { border-left-color: var(--teal); }
+.msg-row { display: flex; align-items: center; gap: .75rem; padding: .7rem .5rem; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+a.msg-row { display: block; }
+.msg-row.unread { background: #fff8e8; border-left: 4px solid var(--amber); font-weight: 600; }
+.message-body { white-space: pre-wrap; max-width: 70ch; }
+:focus-visible { outline: 3px solid rgba(201, 138, 18, .7); outline-offset: 2px; }
+@media (max-width: 575px) { .stat-number { font-size: 1.5rem; } .panel { padding: .9rem; } }
