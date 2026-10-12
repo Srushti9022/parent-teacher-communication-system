@@ -1,6 +1,6 @@
-# Smart School Portal (Flask + MongoDB)
+# Smart School Portal 
 
-A simple parent-teacher communication portal that runs on your **existing** `smart_school` MongoDB database.
+A Intractive parent-teacher communication portal that runs on your **existing** `smart_school` MongoDB database.
 Python, Flask, PyMongo, Jinja2 and Bootstrap. No React, no Node.
 
 ## What it does
