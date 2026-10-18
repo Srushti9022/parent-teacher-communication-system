@@ -1,6 +1,6 @@
-# Smart School Portal 
+# Smart School Portal (Flask + MongoDB)
 
-A Intractive parent-teacher communication portal that runs on your **existing** `smart_school` MongoDB database.
+A simple parent-teacher communication portal that runs on your **existing** `smart_school` MongoDB database.
 Python, Flask, PyMongo, Jinja2 and Bootstrap. No React, no Node.
 
 ## What it does
@@ -12,6 +12,51 @@ Python, Flask, PyMongo, Jinja2 and Bootstrap. No React, no Node.
 | **Parent** | View **only their own child's** marks, attendance, notifications and messages; send messages to their child's teachers. |
 
 Changes a teacher saves are written straight to MongoDB, so the parent sees them as soon as they refresh.
+
+## Parent progress dashboard
+
+The parent dashboard shows the linked child's academic progress, built **only from the `marks` and `attendance`
+collections that teachers already update** (no copies, no cache, nothing hardcoded).
+
+* **How a teacher's update reaches the parent:** Teacher > Marks saves the change to the one existing `marks` document.
+  Every time the parent opens or refreshes the dashboard, the page reads the child's current marks and attendance from
+  MongoDB and recalculates the chart, cards, subject table and report. Pages are sent with `Cache-Control: no-store`.
+  There is no automatic background refresh; refreshing the page is enough.
+* **Chart ("My Child's Academic Progress")**: one point per exam, 0-100% axis, a subject selector (Overall or any
+  subject), tooltips with exam, marks, maximum and percentage. Chart.js 4.4.1 is loaded from a CDN, so the chart needs
+  an internet connection; the full results table underneath works without it.
+* **Calculations** (all in `progress.py`):
+  overall % = total marks obtained / total maximum marks x 100 over the subjects that have a valid result for that
+  exam (never an average of percentages); a record counts only if both marks are numbers, the maximum is above 0 and
+  the marks are between 0 and the maximum; one result per subject and exam (if duplicates ever existed, the highest
+  `markId` is used and the other is ignored); missing results are left out, never shown as 0; change is in
+  **percentage points** (65% to 72% = +7.0 points); +2.0 points or more = Improving, -2.0 or less = Declining,
+  otherwise Stable; strongest and weakest subject need results in at least 3 subjects.
+* **Exam order:** the marks documents have **no exam date**, only `examName` (`Unit Test 1`, `Mid-Term`). The order is
+  taken from `EXAM_ORDER` in `grading.py` and the page says it is assumed, not date-verified. Add any new exam name to
+  that list (in the right position) or it is placed last, alphabetically.
+* **Report:** a clearly labelled **rule-based** report (summary, exam-to-exam changes, strong subjects, subjects that
+  may need attention, attendance patterns, suggestions, and career pathways only when the same subject is 75% or more
+  in every exam it appears in, across at least 2 exams). The project has no AI integration, so no AI service is used and
+  no student data leaves the server.
+* **Security:** the child always comes from the signed-in parent's own record (`parent_and_child()`); the dashboard
+  ignores any student id in the URL, there is no separate data endpoint, and the chart data contains no names or ids.
+
+### The three dashboard charts (attendance doughnut, marks bars, monthly trend)
+
+All figures are calculated in `progress.py` from the logged-in parent's own child (`marks` and `attendance` filtered
+by that child's `studentId`, read on every page load) and drawn by `static/insights.js` with Chart.js.
+
+* **Attendance doughnut:** present (teal) and absent (coral) counts and percentages. A record counts only if its
+  `status` is `Present` or `Absent` and its `date` is a real date.
+* **Marks by subject:** marks obtained and maximum marks per subject (names come from the `subjects` collection), with an
+  exam selector. Same validity and de-duplication rules as the progress chart.
+* **Monthly attendance trend:** one point per calendar month that has valid records; needs **at least 2 months**,
+  otherwise a message with the real figures is shown instead of a chart. The highest and lowest months are marked.
+  **The sample database has all its attendance in July 2026, so this chart shows the message until attendance is
+  recorded in another month** (for example, a teacher saves attendance for a date in August on the Attendance page).
+* If Chart.js cannot load, the charts are replaced by the same figures as text and tables. The "My Child's Academic
+  Progress" line chart has a built-in SVG version that needs no library.
 
 ## Who is "authorised"? (worked out from your data)
 
@@ -106,7 +151,7 @@ To let someone sign in with the original password again, delete their one docume
 
 * **No timetable and no teacher-per-section data**: that is why subject teachers cover every section of a grade.
 * **Messages have no thread or reply id**: replies are separate messages (subject "Re: ...").
-* **Marks cannot be created**: your data already has a record for every student, subject and exam, so teachers
+* **Teachers cannot create new marks records**: your data already has a record for every student, subject and exam, so teachers
   can only *edit* marks. No exams are invented.
 * **Attendance** is one record per student, subject and date. Teachers can correct a date or record a new one
   (date not in the future).
@@ -121,13 +166,13 @@ To let someone sign in with the original password again, delete their one docume
 python -m unittest discover -s tests -v
 ```
 
-The 25 tests load your real dump **into memory** (from `..\database\smart_school`; set `DUMP_DIR` to use another
+The 62 tests load your real dump **into memory** (from `..\database\smart_school`; set `DUMP_DIR` to use another
 folder) and never touch your MongoDB. They check logins and passwords, role access, parent isolation, marks and
 attendance updates reaching parents, message rules and that existing data stays unchanged.
 
 ## Files
 
-`app.py` start here, `auth.py` login, passwords and CSRF, `access.py` who may see what, `admin.py` `teacher.py`
+`progress.py` progress and chart calculations and the report, `static/progress.js` and `static/insights.js` the charts, `app.py` start here, `auth.py` login, passwords and CSRF, `access.py` who may see what, `admin.py` `teacher.py`
 `parent.py` `messages.py` the pages, `templates/` Jinja pages, `static/style.css`, `check_db.py` read-only check.
 
 ## Security notes

@@ -1,26 +1,217 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pct_badge, notice %}
+{% from "_macros.html" import grade_badge, notice %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-  <div><h1 class="h3 mb-0">{{ child.name }}</h1>
-    <span class="text-muted">{{ child.studentId }} &middot; Class {{ child.className }}{{ child.section }} &middot; Roll {{ child.rollNumber }} &middot; {{ child.academicYear }}</span></div>
-  <a class="btn btn-primary" href="{{ url_for('messages.compose') }}">Message a teacher</a>
+{% set sm = progress.summary %}
+<div class="pp">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+      <h1 class="h3 mb-0 pp-title">{{ child.name }}</h1>
+      <span class="pp-muted">{{ child.studentId }} &middot; Class {{ child.className }}{{ child.section }} &middot; Roll {{ child.rollNumber }} &middot; {{ child.academicYear }}</span>
+    </div>
+    <nav class="pp-links" aria-label="Parent shortcuts">
+      <a class="btn btn-sm btn-outline-pp" href="{{ url_for('parent.marks') }}">Marks</a>
+      <a class="btn btn-sm btn-outline-pp" href="{{ url_for('parent.attendance') }}">Attendance</a>
+      <a class="btn btn-sm btn-outline-pp" href="{{ url_for('messages.inbox') }}">Messages{% if unread %} <span class="badge rounded-pill text-bg-warning">{{ unread }}</span>{% endif %}</a>
+      <a class="btn btn-sm btn-outline-pp" href="{{ url_for('parent.notifications') }}">Notifications</a>
+      <a class="btn btn-sm btn-pp" href="{{ url_for('messages.compose') }}">Message a teacher</a>
+    </nav>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Latest exam</div>
+      {% if sm.latest %}
+      <div class="pp-value">{{ sm.latest.percentage }}%</div>
+      <div class="pp-sub">{{ sm.latest.exam }} {{ grade_badge(sm.latest.percentage|grade) }}</div>
+      <div class="progress pp-bar" role="progressbar" aria-label="Latest exam percentage" aria-valuenow="{{ sm.latest.percentage }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ sm.latest.percentage }}%"></div></div>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">No results recorded yet</div>{% endif %}
+    </div></div>
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Previous exam</div>
+      {% if sm.previous %}
+      <div class="pp-value">{{ sm.previous.percentage }}%</div>
+      <div class="pp-sub">{{ sm.previous.exam }}</div>
+      <div class="progress pp-bar" role="progressbar" aria-label="Previous exam percentage" aria-valuenow="{{ sm.previous.percentage }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ sm.previous.percentage }}%"></div></div>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">{{ 'No earlier exam yet' if sm.latest else 'No results recorded yet' }}</div>{% endif %}
+    </div></div>
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Change since previous exam</div>
+      {% if sm.change is not none %}
+      <div class="pp-value pp-{{ sm.status|lower }}"><span aria-hidden="true">{{ '&#9650;'|safe if sm.change > 0 else ('&#9660;'|safe if sm.change < 0 else '&#9632;'|safe) }}</span> {{ sm.changeText }}</div>
+      <div class="pp-sub">percentage points</div>
+      <span class="pp-status pp-status-{{ sm.status|lower }}">{{ sm.status }}</span>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">{{ 'Needs a second exam to compare' if sm.latest else 'No results recorded yet' }}</div>{% endif %}
+    </div></div>
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Attendance</div>
+      {% if attendance.total %}
+      <div class="pp-value">{{ attendance.percentage }}%</div>
+      <div class="pp-sub">{{ attendance.present }} of {{ attendance.total }} classes attended</div>
+      <div class="progress pp-bar" role="progressbar" aria-label="Attendance percentage" aria-valuenow="{{ attendance.percentage }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ attendance.percentage }}%"></div></div>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">No attendance recorded yet</div>{% endif %}
+    </div></div>
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Strongest subject</div>
+      {% if sm.strongest %}<div class="pp-value pp-text">{{ sm.strongest.names|join(', ') }}</div><div class="pp-sub">{{ sm.strongest.percentage }}% across all exams</div>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">{{ sm.rankNote or 'No results recorded yet' }}</div>{% endif %}
+    </div></div>
+    <div class="col-6 col-lg-4 col-xl-2"><div class="pp-card">
+      <div class="pp-label">Needs attention</div>
+      {% if sm.attention %}<div class="pp-value pp-text">{{ sm.attention.names|join(', ') }}</div><div class="pp-sub">{{ sm.attention.percentage }}% across all exams</div>
+      {% else %}<div class="pp-value pp-none">&ndash;</div><div class="pp-sub">{{ sm.rankNote or 'No results recorded yet' }}</div>{% endif %}
+    </div></div>
+  </div>
+
+  <section class="pp-panel mb-4" aria-labelledby="chart-title">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+      <h2 id="chart-title" class="h5 mb-0 pp-title">My Child's Academic Progress</h2>
+      {% if progress.hasData %}
+      <div><label for="subject-select" class="form-label small mb-0">Show</label>
+        <select id="subject-select" class="form-select form-select-sm">
+          <option value="overall">Overall (all subjects)</option>
+          {% for sub in progress.series %}<option value="{{ sub.id }}">{{ sub.name }}</option>{% endfor %}
+        </select></div>
+      {% endif %}
+    </div>
+    {% if progress.hasData %}
+    <div class="pp-chart" id="chart-box"><canvas id="progress-chart" role="img" aria-label="Line chart of your child's percentage in each exam, on a scale from 0 to 100 percent. The same figures are in the table below."></canvas></div>
+    <div id="chart-svg" class="pp-svg" hidden></div>
+    <p id="chart-caption" class="pp-caption" aria-live="polite"></p>
+    <div id="chart-fallback" class="alert alert-warning" role="status" hidden>The interactive chart library could not be loaded (it comes from the internet), so a simplified chart is shown. The same figures are in the table below.</div>
+    {% if progress.exams|length == 1 %}<p class="pp-muted small mb-1">Only one exam is recorded so far. A trend line appears once a second exam has results.</p>{% endif %}
+    {% if sm.previous and not sm.likeForLike %}<p class="small text-warning-emphasis mb-1">The latest and previous exams do not cover the same subjects, so the overall comparison is not like for like.</p>{% endif %}
+    <p class="pp-muted small mb-2">{{ progress.chronologyNote }}</p>
+    <details class="pp-details"><summary>View all results as a table</summary>
+      <div class="table-responsive mt-2"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Subject</th>{% for e in progress.exams %}<th>{{ e }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          <tr class="table-light fw-semibold"><td>Overall</td>{% for p in progress.overall %}<td>{{ p.obtained }} / {{ p.maximum }} ({{ p.percentage }}%)</td>{% endfor %}</tr>
+          {% for sub in progress.series %}<tr><td>{{ sub.name }}</td>{% for p in sub.points %}<td>{% if p %}{{ p.obtained }} / {{ p.maximum }} ({{ p.percentage }}%){% else %}<span class="pp-muted">Not recorded</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
+        </tbody></table></div>
+    </details>
+    {% else %}
+    <div class="pp-empty">
+      <p class="mb-1"><strong>No exam results yet.</strong></p>
+      <p class="mb-0 pp-muted">Marks appear here as soon as the teachers enter them. Nothing is shown until then, so an empty chart never looks like a score of zero.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="pc mb-4" aria-labelledby="insights-title">
+    {% set pie = insights.pie %}{% set mo = insights.monthly %}
+    <h2 id="insights-title" class="pc-heading">Attendance and marks at a glance</h2>
+    <div id="insights-fallback" class="alert alert-warning" role="status" hidden>The interactive charts need the Chart.js library, which could not be loaded (it comes from the internet). The same figures are shown as text and tables.</div>
+    <div class="row g-3">
+      <div class="col-lg-4"><div class="pc-card h-100">
+        <h3 class="pc-title">Attendance: present and absent</h3>
+        {% if pie %}
+        <div class="pc-chart pc-chart-pie"><canvas id="attendance-pie" role="img" aria-label="Doughnut chart of attendance: {{ pie.present }} classes present and {{ pie.absent }} absent out of {{ pie.total }}, {{ pie.percentage }}% attendance."></canvas></div>
+        <ul class="pc-stats">
+          <li><span class="pc-dot pc-dot-present"></span>Present: <strong>{{ pie.present }}</strong> of {{ pie.total }} ({{ pie.presentPct }}%)</li>
+          <li><span class="pc-dot pc-dot-absent"></span>Absent: <strong>{{ pie.absent }}</strong> of {{ pie.total }} ({{ pie.absentPct }}%)</li>
+          <li>Attendance: <strong>{{ pie.percentage }}%</strong></li>
+        </ul>
+        {% else %}<div class="pc-empty">No attendance has been recorded yet, so there is nothing to chart.</div>{% endif %}
+      </div></div>
+      <div class="col-lg-8"><div class="pc-card h-100">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+          <h3 class="pc-title mb-0">Marks by subject</h3>
+          {% if insights.bars %}<div><label for="exam-select" class="form-label small mb-0">Exam</label>
+            <select id="exam-select" class="form-select form-select-sm">{% for e in insights.bars.exams %}<option value="{{ e }}" {{ 'selected' if e == insights.bars.default }}>{{ e }}</option>{% endfor %}</select></div>{% endif %}
+        </div>
+        {% if insights.bars %}
+        <div class="pc-chart"><canvas id="marks-bar" role="img" aria-label="Bar chart of marks obtained and maximum marks for each subject in the selected exam. The same figures are in the tables on this page."></canvas></div>
+        <p id="marks-caption" class="pc-caption" aria-live="polite">{{ insights.bars.byExam[insights.bars.default].caption }}</p>
+        {% else %}<div class="pc-empty">No exam results have been recorded yet, so there is nothing to chart.</div>{% endif %}
+      </div></div>
+      <div class="col-12"><div class="pc-card">
+        <h3 class="pc-title">Monthly attendance trend</h3>
+        {% if mo.chart %}
+        <div class="pc-chart"><canvas id="monthly-trend" role="img" aria-label="Line chart of attendance percentage for each month with attendance records."></canvas></div>
+        <p class="pc-callouts">
+          {% if mo.highest %}<span class="pc-badge"><span class="pc-dot pc-dot-high"></span>Highest: {{ mo.highest.labels|join(', ') }} ({{ mo.highest.percentage }}%)</span>
+          <span class="pc-badge"><span class="pc-dot pc-dot-low"></span>Lowest: {{ mo.lowest.labels|join(', ') }} ({{ mo.lowest.percentage }}%)</span>{% endif %}
+          {% if mo.note %}<span class="pc-caption">{{ mo.note }}</span>{% endif %}
+        </p>
+        {% else %}<div class="pc-empty">{{ mo.message }}</div>{% endif %}
+        {% if mo.months %}
+        <details class="pp-details mt-2"><summary>{{ 'View monthly figures' if mo.chart else 'View the figures that exist' }}</summary>
+          <div class="table-responsive mt-2"><table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Month</th><th class="text-end">Present</th><th class="text-end">Valid records</th><th class="text-end">Attendance</th></tr></thead>
+            <tbody>{% for m in mo.months %}<tr><td>{{ m.label }}</td><td class="text-end">{{ m.present }}</td><td class="text-end">{{ m.total }}</td><td class="text-end">{{ m.percentage }}%</td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>{% endif %}
+        {% if mo.skipped %}<p class="pc-caption mb-0">{{ mo.skipped }} record{{ '' if mo.skipped == 1 else 's' }} without a valid date or status {{ 'was' if mo.skipped == 1 else 'were' }} left out.</p>{% endif %}
+      </div></div>
+    </div>
+  </section>
+
+  {% if progress.hasData %}
+  <section class="pp-panel mb-4" aria-labelledby="subjects-title">
+    <h2 id="subjects-title" class="h5 pp-title">Subject-wise results: {{ sm.latest.exam }}</h2>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Subject</th><th class="text-end">Marks</th><th style="min-width:150px">Percentage</th><th>Grade</th><th>{% if sm.previous %}Change since {{ sm.previous.exam }}{% else %}Change{% endif %}</th></tr></thead>
+      <tbody>{% for r in progress.latest_rows %}
+        <tr>
+          <td>{{ r.name }}</td>
+          {% if r.recorded %}
+          <td class="text-end">{{ r.obtained }} / {{ r.maximum }}</td>
+          <td><div class="d-flex align-items-center gap-2"><div class="progress pp-bar flex-grow-1" role="progressbar" aria-label="{{ r.name }} percentage" aria-valuenow="{{ r.percentage }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ r.percentage }}%"></div></div><span>{{ r.percentage }}%</span></div></td>
+          <td>{{ grade_badge(r.grade) }}</td>
+          <td>{% if r.change is not none %}<span class="pp-change {{ 'pp-up' if r.change > 0 else ('pp-down' if r.change < 0 else '') }}"><span aria-hidden="true">{{ '&#9650;'|safe if r.change > 0 else ('&#9660;'|safe if r.change < 0 else '&#9632;'|safe) }}</span> {{ '+%.1f' % r.change if r.change >= 0 else '\u2212%.1f' % (r.change|abs) }}</span>{% else %}<span class="pp-muted">&ndash;</span>{% endif %}</td>
+          {% else %}<td colspan="4" class="pp-muted">Not recorded for {{ sm.latest.exam }} yet</td>{% endif %}
+        </tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  {% endif %}
+
+  <section class="pp-panel mb-4" aria-labelledby="report-title">
+    <h2 id="report-title" class="h5 pp-title">Progress report</h2>
+    <p class="pp-tag mb-1">Rule-based report: written automatically from your child's recorded marks and attendance. No AI service is used.</p>
+    <p class="pp-muted small">Built from the latest saved data on {{ generated_at|dt }} UTC; it is regenerated every time this page loads.</p>
+    <p>{{ report.summary }}</p>
+    {% if report.exam_changes %}<h3 class="h6 pp-title">Exam-to-exam changes</h3><ul>{% for line in report.exam_changes %}<li>{{ line }}</li>{% endfor %}</ul>{% endif %}
+    <div class="row g-3">
+      <div class="col-md-6"><h3 class="h6 pp-title">Strong subjects</h3>
+        {% if report.strong %}<ul>{% for x in report.strong %}<li>{{ x.name }}: {{ x.percentage }}%</li>{% endfor %}</ul>
+        {% else %}<p class="pp-muted">{{ 'None at 75% or above yet.' if progress.aggregate|length >= 3 else 'Needs results in at least 3 subjects.' }}</p>{% endif %}</div>
+      <div class="col-md-6"><h3 class="h6 pp-title">May need more attention</h3>
+        {% if report.attention %}<ul>{% for x in report.attention %}<li>{{ x.name }}: {{ x.percentage }}%{% if x.gradeF %} (graded F in the latest exam){% endif %}</li>{% endfor %}</ul>
+        {% else %}<p class="pp-muted">{{ 'No subject below 60%.' if progress.aggregate|length >= 3 else 'Needs results in at least 3 subjects.' }}</p>{% endif %}</div>
+    </div>
+    <h3 class="h6 pp-title">Attendance</h3>
+    <p class="mb-1">{{ report.attendance_summary }}</p>
+    {% if report.attendance_notes %}<ul>{% for line in report.attendance_notes %}<li>{{ line }}</li>{% endfor %}</ul>{% endif %}
+    <h3 class="h6 pp-title">Suggestions</h3>
+    <ul>{% for tip in report.suggestions %}<li>{{ tip }}</li>{% endfor %}</ul>
+    <h3 class="h6 pp-title">Pathways to explore</h3>
+    {% if report.careers.enough %}
+    <p class="mb-1">{{ report.careers.intro }}</p>
+    <ul>{% for c in report.careers.entries %}<li>Consistently strong in <strong>{{ c.subject }}</strong>: {{ c.paths }}.</li>{% endfor %}</ul>
+    {% else %}<p class="pp-muted mb-0">{{ report.careers.message }}</p>{% endif %}
+    {% if report.limits %}<hr><p class="pp-muted small mb-0">{% for l in report.limits %}{{ l }} {% endfor %}</p>{% endif %}
+  </section>
+
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="pp-panel h-100">
+      <div class="d-flex justify-content-between"><h2 class="h5 pp-title">Latest notifications</h2><a href="{{ url_for('parent.notifications') }}">See all</a></div>
+      {% for n in notices %}{{ notice(n, none) }}{% else %}<p class="pp-muted">No notifications for your child's class yet.</p>{% endfor %}
+    </div></div>
+    <div class="col-lg-5"><div class="pp-panel h-100">
+      <h2 class="h5 pp-title">Class teacher</h2>
+      {% if class_teacher %}<p class="mb-0">{{ class_teacher.name }}<br><span class="pp-muted">{{ class_teacher.email }}</span></p>{% else %}<p class="pp-muted mb-0">No class teacher is recorded.</p>{% endif %}
+      <hr><a href="{{ url_for('parent.marks') }}">View all marks</a> &middot; <a href="{{ url_for('parent.attendance') }}">View attendance</a>
+    </div></div>
+  </div>
 </div>
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ pct_badge(attendance_pct) }}</div><div class="text-muted">Attendance ({{ attendance_count }} records){% if last_date %}<br><span class="small">Last recorded {{ last_date|d }}</span>{% endif %}</div></div></div>
-  {% for exam, data in exams.items() %}<div class="col-6 col-lg-3"><div class="panel stat"><div class="stat-number">{{ data.average }}%</div><div class="text-muted">{{ exam }} average</div></div></div>{% endfor %}
-  <div class="col-6 col-lg-3"><a class="panel stat d-block text-decoration-none text-reset" href="{{ url_for('messages.inbox') }}"><div class="stat-number">{{ unread }}</div><div class="text-muted">Unread messages</div></a></div>
-</div>
-<div class="row g-4">
-  <div class="col-lg-7"><div class="panel">
-    <div class="d-flex justify-content-between"><h2 class="h5">Latest notifications</h2><a href="{{ url_for('parent.notifications') }}">See all</a></div>
-    {% for n in notices %}{{ notice(n, none) }}{% else %}<p class="text-muted">No notifications for your child's class yet.</p>{% endfor %}
-  </div></div>
-  <div class="col-lg-5"><div class="panel">
-    <h2 class="h5">Class teacher</h2>
-    {% if class_teacher %}<p class="mb-0">{{ class_teacher.name }}<br><span class="text-muted">{{ class_teacher.email }}</span></p>{% else %}<p class="text-muted mb-0">No class teacher is recorded.</p>{% endif %}
-    <hr><a href="{{ url_for('parent.marks') }}">View all marks</a> &middot; <a href="{{ url_for('parent.attendance') }}">View attendance</a>
-  </div></div>
-</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% if progress.hasData %}
+<script type="application/json" id="progress-data">{{ progress.chart|tojson }}</script>
+<script src="{{ url_for('static', filename='progress.js') }}"></script>
+{% endif %}
+<script type="application/json" id="insights-data">{{ insights.chart|tojson }}</script>
+<script src="{{ url_for('static', filename='insights.js') }}"></script>
 {% endblock %}

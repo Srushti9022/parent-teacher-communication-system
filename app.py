@@ -6,6 +6,7 @@ from werkzeug.exceptions import HTTPException
 
 import auth
 import config
+import grading
 from db import col
 
 NAV = {
@@ -61,6 +62,10 @@ def create_app(test_config=None):
             unread = col("messages").count_documents({"receiverId": user["userId"], "status": "Sent"})
         return {"csrf_token": auth.csrf_token, "nav_items": NAV.get(user["role"], []) if user else [],
                 "unread_count": unread}
+
+    @app.template_filter("grade")
+    def grade_letter(percentage):
+        return grading.grade_for(percentage)
 
     @app.template_filter("d")
     def format_date(value):
