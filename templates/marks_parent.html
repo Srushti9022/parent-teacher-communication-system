@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Child Marks{% endblock %}
+{% block content %}
+
+<div class="page-title">Child Marks</div>
+
+{% if summary %}
+<div class="card">
+    <h3>{{ child['student_name'] }} &mdash; {{ child['class_name'] }}{% if child['section'] %} - {{ child['section'] }}{% endif %}</h3>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.records|length }}</div>
+        <div class="stat-label">Assessments Recorded</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.overall_percentage if summary.overall_percentage is not none else '-' }}%</div>
+        <div class="stat-label">Overall Percentage</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Marks Records</h3>
+    {% if summary.records %}
+    <table class="data-table">
+        <tr><th>Exam / Assessment</th><th>Subject</th><th>Obtained</th><th>Maximum</th><th>Percentage</th><th>Date</th></tr>
+        {% for r in summary.records %}
+        <tr>
+            <td>{{ r['exam_name'] }}</td>
+            <td>{{ r['subject'] }}</td>
+            <td>{{ r['marks_obtained']|round(1) }}</td>
+            <td>{{ r['max_marks']|round(1) }}</td>
+            <td>{{ ((r['marks_obtained'] / r['max_marks']) * 100)|round(1) }}%</td>
+            <td>{{ r['exam_date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No marks have been entered yet.</p>
+    {% endif %}
+</div>
+
+{% else %}
+<div class="card">
+    <p>No child is currently linked to your account. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}

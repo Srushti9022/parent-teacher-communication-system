@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Marks{% endblock %}
+{% block content %}
+
+<div class="page-title">My Marks</div>
+
+{% if summary %}
+<div class="stats-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.records|length }}</div>
+        <div class="stat-label">Assessments Recorded</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.overall_percentage if summary.overall_percentage is not none else '-' }}%</div>
+        <div class="stat-label">Overall Percentage</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>{{ student['class_name'] }}{% if student['section'] %} - {{ student['section'] }}{% endif %}</h3>
+    {% if summary.records %}
+    <table class="data-table">
+        <tr><th>Exam / Assessment</th><th>Subject</th><th>Obtained</th><th>Maximum</th><th>Percentage</th><th>Date</th></tr>
+        {% for r in summary.records %}
+        <tr>
+            <td>{{ r['exam_name'] }}</td>
+            <td>{{ r['subject'] }}</td>
+            <td>{{ r['marks_obtained']|round(1) }}</td>
+            <td>{{ r['max_marks']|round(1) }}</td>
+            <td>{{ ((r['marks_obtained'] / r['max_marks']) * 100)|round(1) }}%</td>
+            <td>{{ r['exam_date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No marks have been entered yet.</p>
+    {% endif %}
+</div>
+
+{% else %}
+<div class="card">
+    <p>No student record is linked to your account yet. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}

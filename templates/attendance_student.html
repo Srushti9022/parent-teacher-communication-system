@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}My Attendance{% endblock %}
+{% block content %}
+
+<div class="page-title">My Attendance</div>
+
+{% if summary %}
+<div class="stats-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.total }}</div>
+        <div class="stat-label">Total Classes</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.present }}</div>
+        <div class="stat-label">Present</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.absent }}</div>
+        <div class="stat-label">Absent</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ summary.percentage if summary.percentage is not none else '-' }}%</div>
+        <div class="stat-label">Overall Attendance</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>{{ student['class_name'] }}{% if student['section'] %} - {{ student['section'] }}{% endif %}</h3>
+    <table class="data-table">
+        <tr><th>Total Classes</th><td>{{ summary.total }}</td></tr>
+        <tr><th>Present</th><td>{{ summary.present }}</td></tr>
+        <tr><th>Absent</th><td>{{ summary.absent }}</td></tr>
+        <tr><th>Attendance Percentage</th><td>{{ summary.percentage if summary.percentage is not none else 'N/A' }}%</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Attendance Records</h3>
+    {% if summary.records %}
+    <table class="data-table">
+        <tr><th>Date</th><th>Status</th></tr>
+        {% for r in summary.records %}
+        <tr>
+            <td>{{ r['date'] }}</td>
+            <td>
+                {% if r['status'] == 'Present' %}
+                <span class="badge badge-present">Present</span>
+                {% elif r['status'] == 'Absent' %}
+                <span class="badge badge-absent">Absent</span>
+                {% else %}
+                <span class="badge badge-late">{{ r['status'] }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No attendance records yet.</p>
+    {% endif %}
+</div>
+
+{% else %}
+<div class="card">
+    <p>No student record is linked to your account yet. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}

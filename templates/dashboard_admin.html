@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-title">Admin Dashboard</div>
+
+<div class="stats-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ stats.total_students }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ stats.total_teachers }}</div>
+        <div class="stat-label">Total Teachers</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ stats.total_parents }}</div>
+        <div class="stat-label">Total Parents</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ stats.total_notifications }}</div>
+        <div class="stat-label">Notifications Sent</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Administration</h3>
+    <p>As an administrator, you can manage users, oversee attendance and marks records, publish
+    notifications, and monitor overall school activity. The modules below will be built out in the
+    next stage of this project.</p>
+</div>
+
+<div class="feature-grid">
+    <a class="feature-tile" href="{{ url_for('feature_placeholder', feature_key='profile') }}">
+        <div class="icon">&#128100;</div>
+        <div class="label">Manage Users</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('analytics_admin') }}">
+        <div class="icon">&#128197;</div>
+        <div class="label">Attendance Overview</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('analytics_admin') }}">
+        <div class="icon">&#128202;</div>
+        <div class="label">Marks Overview</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('feature_placeholder', feature_key='notifications') }}">
+        <div class="icon">&#128276;</div>
+        <div class="label">Notifications</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('analytics_admin') }}">
+        <div class="icon">&#128200;</div>
+        <div class="label">Basic Analytics</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('feature_placeholder', feature_key='assistant') }}">
+        <div class="icon">&#129302;</div>
+        <div class="label">AI Assistant</div>
+    </a>
+</div>
+
+{% endblock %}

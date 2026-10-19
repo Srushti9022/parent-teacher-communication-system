@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}My Class Analytics{% endblock %}
+{% block content %}
+
+<div class="page-title">My Class Analytics</div>
+<p style="color:#6b7280;font-size:13px;margin-top:-10px;">Showing data for students assigned to you only.</p>
+
+<div class="card">
+    <h3>Attendance Overview</h3>
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-value">{{ attendance.total_students }}</div>
+            <div class="stat-label">Your Students</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ attendance.average_percentage if attendance.average_percentage is not none else '-' }}%</div>
+            <div class="stat-label">Average Attendance</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ attendance.present_total }}</div>
+            <div class="stat-label">Present (Total)</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ attendance.absent_total }}</div>
+            <div class="stat-label">Absent (Total)</div>
+        </div>
+    </div>
+
+    <h3>Class-wise Attendance</h3>
+    {% if attendance.class_summary %}
+    <table class="data-table">
+        <tr><th>Class</th><th>Students</th><th>Records</th><th>Present</th><th>Absent</th><th>Attendance %</th></tr>
+        {% for c in attendance.class_summary %}
+        <tr>
+            <td>{{ c.class_name }}{% if c.section %} - {{ c.section }}{% endif %}</td>
+            <td>{{ c.student_count }}</td>
+            <td>{{ c.total_records }}</td>
+            <td>{{ c.present }}</td>
+            <td>{{ c.absent }}</td>
+            <td>{{ c.percentage if c.percentage is not none else '-' }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No attendance data recorded for your classes yet.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Marks Overview</h3>
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-value">{{ marks.overall_percentage if marks.overall_percentage is not none else '-' }}%</div>
+            <div class="stat-label">Overall Average</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ marks.students_with_marks }}</div>
+            <div class="stat-label">Students With Marks Recorded</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ marks.record_count }}</div>
+            <div class="stat-label">Total Assessment Records</div>
+        </div>
+    </div>
+
+    <h3>Subject-wise Average</h3>
+    {% if marks.subject_summary %}
+    <table class="data-table">
+        <tr><th>Subject</th><th>Records</th><th>Average %</th></tr>
+        {% for s in marks.subject_summary %}
+        <tr>
+            <td>{{ s.subject }}</td>
+            <td>{{ s.record_count }}</td>
+            <td>{{ s.average_percentage if s.average_percentage is not none else '-' }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No marks recorded for your classes yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

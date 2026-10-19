@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Marks - Teacher{% endblock %}
+{% block content %}
+
+<div class="page-title">Marks</div>
+
+<div class="card">
+    <h3>Select Class</h3>
+    {% if classes %}
+    <form method="GET" action="{{ url_for('marks_teacher') }}">
+        <div class="form-group">
+            <label for="class_key">Class</label>
+            <select id="class_key" name="class_key" required onchange="this.form.submit()">
+                <option value="">-- Select a class --</option>
+                {% for c in classes %}
+                {% set key = c['class_name'] ~ '||' ~ c['section'] %}
+                <option value="{{ key }}" {% if key == class_key %}selected{% endif %}>
+                    {{ c['class_name'] }}{% if c['section'] %} - {{ c['section'] }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <noscript><button type="submit" class="btn" style="width:auto;padding:10px 24px;">Load Class</button></noscript>
+    </form>
+    {% else %}
+    <p>You do not have any classes assigned yet.</p>
+    {% endif %}
+</div>
+
+{% if class_key and students %}
+<div class="card">
+    <h3>Select Student</h3>
+    <form method="GET" action="{{ url_for('marks_teacher') }}">
+        <input type="hidden" name="class_key" value="{{ class_key }}">
+        <div class="form-group">
+            <label for="student_id">Student</label>
+            <select id="student_id" name="student_id" required onchange="this.form.submit()">
+                <option value="">-- Select a student --</option>
+                {% for s in students %}
+                <option value="{{ s['student_id'] }}" {% if selected_student and selected_student['student_id'] == s['student_id'] %}selected{% endif %}>
+                    {{ s['roll_no'] }} - {{ s['full_name'] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <noscript><button type="submit" class="btn" style="width:auto;padding:10px 24px;">Load Student</button></noscript>
+    </form>
+</div>
+{% elif class_key %}
+<div class="card"><p>No students found for this class.</p></div>
+{% endif %}
+
+{% if selected_student %}
+<div class="card">
+    <h3>Enter Marks &mdash; {{ selected_student['roll_no'] }} - {{ selected_student['full_name'] }}</h3>
+    <form method="POST" action="{{ url_for('marks_teacher') }}">
+        <input type="hidden" name="class_key" value="{{ class_key }}">
+        <input type="hidden" name="student_id" value="{{ selected_student['student_id'] }}">
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="e.g. Mathematics" required>
+        </div>
+        <div class="form-group">
+            <label for="exam_name">Exam / Assessment Name</label>
+            <input type="text" id="exam_name" name="exam_name" placeholder="e.g. Mid-Term" required>
+        </div>
+        <div class="form-group">
+            <label for="max_marks">Maximum Marks</label>
+            <input type="number" id="max_marks" name="max_marks" min="1" step="0.5" required>
+        </div>
+        <div class="form-group">
+            <label for="obtained_marks">Obtained Marks</label>
+            <input type="number" id="obtained_marks" name="obtained_marks" min="0" step="0.5" required>
+        </div>
+        <div class="form-group">
+            <label for="exam_date">Date</label>
+            <input type="date" id="exam_date" name="exam_date" value="{{ today }}" required>
+        </div>
+        <p style="font-size:12px;color:#6b7280;">If marks already exist for the same subject and exam name for this student, they will be updated instead of duplicated.</p>
+        <button type="submit" class="btn" style="width:auto;padding:10px 24px;">Save Marks</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Existing Marks for This Student</h3>
+    {% if student_marks and student_marks.records %}
+    <table class="data-table">
+        <tr><th>Subject</th><th>Exam</th><th>Obtained</th><th>Max</th><th>Date</th></tr>
+        {% for r in student_marks.records %}
+        <tr>
+            <td>{{ r['subject'] }}</td>
+            <td>{{ r['exam_name'] }}</td>
+            <td>{{ r['marks_obtained']|round(1) }}</td>
+            <td>{{ r['max_marks']|round(1) }}</td>
+            <td>{{ r['exam_date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No marks entered for this student yet.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

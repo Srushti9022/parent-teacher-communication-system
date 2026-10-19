@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Child Profile{% endblock %}
+{% block content %}
+
+<div class="page-title">Child Profile</div>
+
+{% if details %}
+<div class="card">
+    <h3>Child's Personal Information</h3>
+    <table class="data-table">
+        <tr><th>Full Name</th><td>{{ details['student_name'] }}</td></tr>
+        <tr><th>Email</th><td>{{ details['student_email'] or '-' }}</td></tr>
+        <tr><th>Date of Birth</th><td>{{ details['date_of_birth'] or '-' }}</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Academic Information</h3>
+    <table class="data-table">
+        <tr><th>Student ID</th><td>{{ details['roll_no'] }}</td></tr>
+        <tr><th>Department / Class</th><td>{{ details['class_name'] }} - {{ details['section'] }}</td></tr>
+        <tr><th>Year</th><td>{{ details['academic_year'] }}</td></tr>
+        <tr><th>Class Teacher</th><td>{{ details['teacher_name'] or 'Not assigned' }}</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Attendance</h3>
+    <p>No data available yet.</p>
+</div>
+
+<div class="card">
+    <h3>Marks</h3>
+    <p>No data available yet.</p>
+</div>
+{% else %}
+<div class="card">
+    <p>No child is currently linked to your account. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}

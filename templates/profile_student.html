@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+
+<div class="page-title">My Profile</div>
+
+{% if details %}
+<div class="card">
+    <h3>Personal Information</h3>
+    <table class="data-table">
+        <tr><th>Full Name</th><td>{{ details['student_name'] }}</td></tr>
+        <tr><th>Username</th><td>{{ details['student_username'] }}</td></tr>
+        <tr><th>Email</th><td>{{ details['student_email'] or '-' }}</td></tr>
+        <tr><th>Date of Birth</th><td>{{ details['date_of_birth'] or '-' }}</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Academic Information</h3>
+    <table class="data-table">
+        <tr><th>Student ID</th><td>{{ details['roll_no'] }}</td></tr>
+        <tr><th>Department / Class</th><td>{{ details['class_name'] }} - {{ details['section'] }}</td></tr>
+        <tr><th>Year</th><td>{{ details['academic_year'] }}</td></tr>
+        <tr><th>Class Teacher</th><td>{{ details['teacher_name'] or 'Not assigned' }}</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Parent / Guardian</h3>
+    <table class="data-table">
+        <tr><th>Name</th><td>{{ details['parent_name'] or 'Not linked' }}</td></tr>
+        <tr><th>Contact Email</th><td>{{ details['parent_email'] or '-' }}</td></tr>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <p>No student record is linked to your account yet. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}

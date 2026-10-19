@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Parent Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-title">Welcome, {{ user['full_name'] }}</div>
+
+{% if details %}
+<div class="card">
+    <h3>My Child</h3>
+    <table class="data-table">
+        <tr><th>Name</th><td>{{ details['student_name'] }}</td></tr>
+        <tr><th>Student ID</th><td>{{ details['roll_no'] }}</td></tr>
+        <tr><th>Department / Class</th><td>{{ details['class_name'] }} - {{ details['section'] }}</td></tr>
+        <tr><th>Year</th><td>{{ details['academic_year'] }}</td></tr>
+    </table>
+    <p style="margin-top:12px;"><a href="{{ url_for('child_profile') }}">View full child profile &rarr;</a></p>
+</div>
+{% else %}
+<div class="card">
+    <h3>My Child</h3>
+    <p>No child is currently linked to your account. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>Attendance</h3>
+    {% if attendance_summary and attendance_summary.total %}
+    <p>Present {{ attendance_summary.present }} / {{ attendance_summary.total }} classes recorded ({{ attendance_summary.percentage }}%).</p>
+    {% else %}
+    <p>No attendance records yet.</p>
+    {% endif %}
+    <p><a href="{{ url_for('attendance_parent') }}">View full attendance &rarr;</a></p>
+</div>
+
+<div class="card">
+    <h3>Marks</h3>
+    {% if marks_summary and marks_summary.records %}
+    <p>{{ marks_summary.records|length }} assessment(s) recorded. Overall: {{ marks_summary.overall_percentage }}%.</p>
+    {% else %}
+    <p>No marks recorded yet.</p>
+    {% endif %}
+    <p><a href="{{ url_for('marks_parent') }}">View full marks &rarr;</a></p>
+</div>
+
+<div class="card">
+    <h3>Notifications</h3>
+    {% if notifications %}
+    <table class="data-table">
+        {% for n in notifications %}
+        <tr><th style="white-space:nowrap;">{{ n['created_at'][:10] }}</th><td><strong>{{ n['title'] }}</strong><br>{{ n['message'] }}</td></tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No notifications yet.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Messages</h3>
+    <p>No data available yet.</p>
+</div>
+
+<div class="feature-grid">
+    <a class="feature-tile" href="{{ url_for('child_profile') }}">
+        <div class="icon">&#128100;</div>
+        <div class="label">Child Profile</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('attendance_parent') }}">
+        <div class="icon">&#128197;</div>
+        <div class="label">View Attendance</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('marks_parent') }}">
+        <div class="icon">&#128202;</div>
+        <div class="label">View Marks</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('messages_parent') }}">
+        <div class="icon">&#128172;</div>
+        <div class="label">Message Teacher</div>
+    </a>
+</div>
+
+{% endblock %}

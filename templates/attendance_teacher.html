@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Attendance - Teacher{% endblock %}
+{% block content %}
+
+<div class="page-title">Attendance</div>
+
+<div class="card">
+    <h3>Select Class &amp; Date</h3>
+    {% if classes %}
+    <form method="GET" action="{{ url_for('attendance_teacher') }}">
+        <div class="form-group">
+            <label for="class_key">Class</label>
+            <select id="class_key" name="class_key" required>
+                <option value="">-- Select a class --</option>
+                {% for c in classes %}
+                {% set key = c['class_name'] ~ '||' ~ c['section'] %}
+                <option value="{{ key }}" {% if key == class_key %}selected{% endif %}>
+                    {{ c['class_name'] }}{% if c['section'] %} - {{ c['section'] }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="{{ date }}" required>
+        </div>
+        <button type="submit" class="btn" style="width:auto;padding:10px 24px;">Load Students</button>
+    </form>
+    {% else %}
+    <p>You do not have any classes assigned yet.</p>
+    {% endif %}
+</div>
+
+{% if class_key and students %}
+<div class="card">
+    <h3>Mark Attendance &mdash; {{ class_key.split('||')[0] }}{% if class_key.split('||')[1] %} - {{ class_key.split('||')[1] }}{% endif %} &mdash; {{ date }}</h3>
+    <form method="POST" action="{{ url_for('attendance_teacher') }}">
+        <input type="hidden" name="class_key" value="{{ class_key }}">
+        <input type="hidden" name="date" value="{{ date }}">
+        <table class="data-table">
+            <tr><th>Student ID</th><th>Name</th><th>Present</th><th>Absent</th></tr>
+            {% for s in students %}
+            {% set existing = attendance_map.get(s['student_id']) %}
+            <tr>
+                <td>{{ s['roll_no'] }}</td>
+                <td>{{ s['full_name'] }}</td>
+                <td><input type="radio" name="status_{{ s['student_id'] }}" value="Present" {% if existing == 'Present' %}checked{% endif %}></td>
+                <td><input type="radio" name="status_{{ s['student_id'] }}" value="Absent" {% if existing == 'Absent' %}checked{% endif %}></td>
+            </tr>
+            {% if existing and existing not in ('Present', 'Absent') %}
+            <tr><td colspan="4" style="color:#8a6300;font-size:12px;">Currently marked as "{{ existing }}" for this date &mdash; choose Present or Absent to update it.</td></tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+        <br>
+        <button type="submit" class="btn" style="width:auto;padding:10px 24px;">Save Attendance</button>
+    </form>
+</div>
+{% elif class_key %}
+<div class="card">
+    <p>No students found for this class.</p>
+</div>
+{% endif %}
+
+{% endblock %}

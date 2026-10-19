@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student-Parent Communication Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Student&ndash;Parent Communication Platform</div>
+        {% if session.get('user_id') %}
+        <div class="nav-right">
+            <span>{{ session.get('full_name') }}</span>
+            <span class="role-badge">{{ session.get('role') }}</span>
+            <a class="logout-link" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="layout">
+        {% if session.get('user_id') %}
+        <div class="sidebar">
+            <a class="side-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+            {% if session.get('role') == 'student' %}
+            <a class="side-link" href="{{ url_for('profile') }}">My Profile</a>
+            {% elif session.get('role') == 'parent' %}
+            <a class="side-link" href="{{ url_for('child_profile') }}">Child Profile</a>
+            {% else %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='profile') }}">Student Profile</a>
+            {% endif %}
+            {% if session.get('role') == 'teacher' %}
+            <a class="side-link" href="{{ url_for('attendance_teacher') }}">Attendance</a>
+            {% elif session.get('role') == 'student' %}
+            <a class="side-link" href="{{ url_for('attendance_student') }}">Attendance</a>
+            {% elif session.get('role') == 'parent' %}
+            <a class="side-link" href="{{ url_for('attendance_parent') }}">Attendance</a>
+            {% elif session.get('role') == 'admin' %}
+            <a class="side-link" href="{{ url_for('analytics_admin') }}">Attendance</a>
+            {% else %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='attendance') }}">Attendance</a>
+            {% endif %}
+            {% if session.get('role') == 'teacher' %}
+            <a class="side-link" href="{{ url_for('marks_teacher') }}">Marks</a>
+            {% elif session.get('role') == 'student' %}
+            <a class="side-link" href="{{ url_for('marks_student') }}">Marks</a>
+            {% elif session.get('role') == 'parent' %}
+            <a class="side-link" href="{{ url_for('marks_parent') }}">Marks</a>
+            {% elif session.get('role') == 'admin' %}
+            <a class="side-link" href="{{ url_for('analytics_admin') }}">Marks</a>
+            {% else %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='marks') }}">Marks</a>
+            {% endif %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='notifications') }}">Notifications</a>
+            {% if session.get('role') == 'teacher' %}
+            <a class="side-link" href="{{ url_for('messages_teacher') }}">Messages</a>
+            {% elif session.get('role') == 'parent' %}
+            <a class="side-link" href="{{ url_for('messages_parent') }}">Messages</a>
+            {% else %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='messages') }}">Messages</a>
+            {% endif %}
+            {% if session.get('role') == 'admin' %}
+            <a class="side-link" href="{{ url_for('analytics_admin') }}">Analytics</a>
+            {% elif session.get('role') == 'teacher' %}
+            <a class="side-link" href="{{ url_for('analytics_teacher') }}">Analytics</a>
+            {% else %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='analytics') }}">Analytics</a>
+            {% endif %}
+            <a class="side-link" href="{{ url_for('feature_placeholder', feature_key='assistant') }}">AI Assistant</a>
+        </div>
+        {% endif %}
+
+        <div class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</body>
+</html>

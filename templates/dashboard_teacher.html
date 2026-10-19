@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-title">Welcome, {{ user['full_name'] }}</div>
+
+<div class="stats-grid">
+    <div class="stat-box">
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Students Assigned to You</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Teacher Overview</h3>
+    <p>From here you will be able to mark attendance, enter student marks, send notifications
+    to parents, and message parents directly. These modules are coming in the next stage of
+    this project.</p>
+</div>
+
+<div class="feature-grid">
+    <a class="feature-tile" href="{{ url_for('attendance_teacher') }}">
+        <div class="icon">&#128197;</div>
+        <div class="label">Mark Attendance</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('marks_teacher') }}">
+        <div class="icon">&#128221;</div>
+        <div class="label">Enter Marks</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('messages_teacher') }}">
+        <div class="icon">&#128172;</div>
+        <div class="label">Message Parents</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('feature_placeholder', feature_key='notifications') }}">
+        <div class="icon">&#128276;</div>
+        <div class="label">Send Notification</div>
+    </a>
+    <a class="feature-tile" href="{{ url_for('analytics_teacher') }}">
+        <div class="icon">&#128200;</div>
+        <div class="label">Class Analytics</div>
+    </a>
+</div>
+
+{% endblock %}

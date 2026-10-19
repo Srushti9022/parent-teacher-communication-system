@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+
+<div class="page-title">Messages</div>
+
+{% if teacher_name %}
+<div class="card">
+    <h3>Conversation with {{ teacher_name }}</h3>
+
+    {% if conversation %}
+    <table class="data-table">
+        <tr><th>From</th><th>Message</th><th>Sent</th></tr>
+        {% for m in conversation %}
+        <tr>
+            <td>{% if m['sender_id'] == user['id'] %}You{% else %}{{ teacher_name }}{% endif %}</td>
+            <td>{{ m['content'] }}</td>
+            <td style="white-space:nowrap;">{{ m['sent_at'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No messages yet. Start the conversation below.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Send a Message</h3>
+    <form method="POST" action="{{ url_for('messages_parent') }}">
+        <div class="form-group">
+            <label for="content">Message</label>
+            <textarea id="content" name="content" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn" style="width:auto;padding:10px 24px;">Send</button>
+    </form>
+</div>
+{% else %}
+<div class="card">
+    <p>No teacher is currently linked to your child's class. Please contact the administrator.</p>
+</div>
+{% endif %}
+
+{% endblock %}
