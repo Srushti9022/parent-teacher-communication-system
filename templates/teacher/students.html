@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pct_badge %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div><h1 class="h3 mb-0">Your students</h1><span class="text-muted">{{ rows|length }} shown. Attendance and average cover the subjects you may see for each student.</span></div>
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-auto"><label class="form-label small mb-0" for="class_id">Class</label>
+      <select class="form-select form-select-sm" id="class_id" name="class_id"><option value="">All my classes</option>
+      {% for c in classes %}<option value="{{ c.classid }}" {{ 'selected' if c.classid == class_id }}>Class {{ c.classname }}{{ c.section }}</option>{% endfor %}</select></div>
+    <div class="col-auto"><label class="form-label small mb-0" for="q">Name or ID</label><input class="form-control form-control-sm" id="q" name="q" value="{{ q }}"></div>
+    <div class="col-auto"><button class="btn btn-sm btn-primary">Filter</button></div>
+  </form>
+</div>
+<div class="panel"><div class="table-responsive"><table class="table table-hover table-sm align-middle mb-0">
+  <thead><tr><th>Class</th><th>Roll</th><th>Name</th><th>Attendance</th><th>Average marks</th><th></th></tr></thead>
+  <tbody>{% for r in rows %}<tr>
+    <td>{{ r.s.className }}{{ r.s.section }}{% if r.s.classId in led_ids %} <span class="badge text-bg-light border">My class</span>{% endif %}</td>
+    <td>{{ r.s.rollNumber }}</td><td>{{ r.s.name }} <span class="text-muted small">{{ r.s.studentId }}</span></td>
+    <td>{{ pct_badge(r.attendance) }}</td><td>{% if r.average is none %}<span class="text-muted">No data</span>{% else %}{{ r.average }}%{% endif %}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('teacher.student_detail', student_id=r.s.studentId) }}">Open</a></td></tr>
+  {% else %}<tr><td colspan="6" class="text-muted">No students match.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

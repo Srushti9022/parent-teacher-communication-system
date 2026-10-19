@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Attendance</h1>
+{% if not targets %}<div class="panel text-muted">You are not listed as the teacher of any subject, so there is no attendance you can edit.</div>
+{% else %}
+<form method="get" class="panel mb-4 row g-3 align-items-end">
+  <div class="col-md-5"><label class="form-label" for="target">Subject and class</label>
+    <select class="form-select" id="target" name="target" required><option value="">Choose...</option>
+    {% for t in targets %}<option value="{{ t.value }}" {{ 'selected' if target and target.value == t.value }}>{{ t.label }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label" for="date">Date</label><input class="form-control" type="date" id="date" name="date" value="{{ date_text }}" max="{{ today }}" required></div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Show students</button></div>
+</form>
+{% if target and rows %}
+<form method="post" class="panel">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="target" value="{{ target.value }}"><input type="hidden" name="date" value="{{ date_text }}">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+    <h2 class="h5 mb-0">{{ target.label }} &middot; {{ date_text }}</h2>
+    <div class="btn-group btn-group-sm"><button type="button" class="btn btn-outline-success" data-all="Present">Set all Present</button><button type="button" class="btn btn-outline-danger" data-all="Absent">Set all Absent</button></div>
+  </div>
+  {% if not rows[0].a and request.method == 'GET' %}<p class="text-muted small">No attendance has been recorded for this date yet. Choose a status for each student.</p>{% endif %}
+  <div class="table-responsive"><table class="table table-sm align-middle">
+    <thead><tr><th>Roll</th><th>Student</th><th>Status</th></tr></thead>
+    <tbody>{% for r in rows %}{% set sid = r.s.studentId %}<tr>
+      <td>{{ r.s.rollNumber }}</td><td>{{ r.s.name }}</td>
+      <td><div class="btn-group btn-group-sm" role="group" aria-label="Status for {{ r.s.name }}">
+        <input type="radio" class="btn-check" name="status_{{ sid }}" id="p-{{ sid }}" value="Present" {{ 'checked' if entered.get(sid) == 'Present' }} required><label class="btn btn-outline-success" for="p-{{ sid }}">Present</label>
+        <input type="radio" class="btn-check" name="status_{{ sid }}" id="a-{{ sid }}" value="Absent" {{ 'checked' if entered.get(sid) == 'Absent' }} required><label class="btn btn-outline-danger" for="a-{{ sid }}">Absent</label>
+      </div></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <button class="btn btn-primary">Save attendance</button>
+</form>
+{% endif %}{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-all]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    document.querySelectorAll('input[type=radio][value=' + button.dataset.all + ']').forEach(function (r) { r.checked = true; });
+  });
+});
+</script>
+{% endblock %}

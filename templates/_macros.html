@@ -1,0 +1,61 @@
+{% macro grade_badge(grade) -%}
+{%- set colour = {'A+': 'success', 'A': 'success', 'B+': 'primary', 'B': 'primary', 'C': 'warning', 'D': 'warning', 'F': 'danger'}.get(grade, 'secondary') -%}
+<span class="badge text-bg-{{ colour }}">{{ grade }}</span>
+{%- endmacro %}
+
+{% macro pct_badge(value) -%}
+{%- if value is none -%}<span class="text-muted">No data</span>
+{%- else -%}<span class="badge text-bg-{{ 'success' if value >= 85 else ('warning' if value >= 75 else 'danger') }}">{{ value }}%</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro status_badge(status) -%}
+<span class="badge text-bg-{{ {'Present': 'success', 'Absent': 'danger', 'Read': 'secondary', 'Sent': 'warning', 'Active': 'success'}.get(status, 'secondary') }}">{{ status }}</span>
+{%- endmacro %}
+
+{% macro priority_badge(p) -%}
+<span class="badge text-bg-{{ {'High': 'danger', 'Normal': 'primary', 'Low': 'secondary'}.get(p, 'secondary') }}">{{ p }}</span>
+{%- endmacro %}
+
+{% macro pager(page, pages) %}
+{% if pages > 1 %}
+<nav aria-label="Pages"><ul class="pagination pagination-sm mb-0">
+  <li class="page-item {{ 'disabled' if page <= 1 }}"><a class="page-link" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=page-1)) }}">Previous</a></li>
+  <li class="page-item disabled"><span class="page-link">Page {{ page }} of {{ pages }}</span></li>
+  <li class="page-item {{ 'disabled' if page >= pages }}"><a class="page-link" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=page+1)) }}">Next</a></li>
+</ul></nav>
+{% endif %}
+{% endmacro %}
+
+{% macro marks_table(exam, data) %}
+<div class="panel mb-4">
+  <div class="d-flex justify-content-between align-items-baseline mb-2">
+    <h2 class="h5 mb-0">{{ exam }}</h2>
+    <span class="text-muted small">Average {{ data.average }}%</span>
+  </div>
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Subject</th><th class="text-end">Marks</th><th class="text-end">Percentage</th><th>Grade</th></tr></thead>
+    <tbody>{% for r in data.rows %}
+      <tr><td>{{ r.subject }}</td><td class="text-end">{{ r.obtained }} / {{ r.maximum }}</td><td class="text-end">{{ r.percentage }}%</td><td>{{ grade_badge(r.grade) }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+{% endmacro %}
+
+{% macro attendance_summary(rows) %}
+<div class="table-responsive"><table class="table table-sm align-middle mb-0">
+  <thead><tr><th>Subject</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Classes held</th><th>Attendance</th></tr></thead>
+  <tbody>{% for r in rows %}
+    <tr><td>{{ r.subject }}</td><td class="text-end">{{ r.present }}</td><td class="text-end">{{ r.absent }}</td><td class="text-end">{{ r.total }}</td><td>{{ pct_badge(r.percentage) }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endmacro %}
+
+{% macro notice(n, creator) %}
+<div class="notice priority-{{ n.priority|lower }}">
+  <div class="d-flex justify-content-between gap-2">
+    <h3 class="h6 mb-1">{{ n.title }}</h3>{{ priority_badge(n.priority) }}
+  </div>
+  <p class="mb-1">{{ n.message }}</p>
+  <div class="text-muted small">{{ n.createdDate|d }}{% if creator %} &middot; {{ creator.name }}{% endif %}</div>
+</div>
+{% endmacro %}

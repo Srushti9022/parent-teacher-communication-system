@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% from "_macros.html" import marks_table %}
+{% block title %}Marks{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Marks</h1><p class="text-muted">{{ child.name }} &middot; Class {{ child.className }}{{ child.section }}</p>
+{% for exam, data in exams.items() %}{{ marks_table(exam, data) }}{% else %}<div class="panel text-muted">No marks have been recorded yet.</div>{% endfor %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import grade_badge %}
+{% block title %}Enter marks{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Enter marks</h1>
+{% if not targets %}<div class="panel text-muted">You are not listed as the teacher of any subject, so there are no marks you can edit.</div>
+{% else %}
+<form method="get" class="panel mb-4 row g-3 align-items-end">
+  <div class="col-md-5"><label class="form-label" for="target">Subject and class</label>
+    <select class="form-select" id="target" name="target" required><option value="">Choose...</option>
+    {% for t in targets %}<option value="{{ t.value }}" {{ 'selected' if target and target.value == t.value }}>{{ t.label }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label" for="exam">Exam</label>
+    <select class="form-select" id="exam" name="exam" required><option value="">Choose...</option>
+    {% for e in exams %}<option {{ 'selected' if e == exam }}>{{ e }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Show students</button></div>
+</form>
+{% if target and exam %}
+<form method="post" class="panel">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="target" value="{{ target.value }}"><input type="hidden" name="exam" value="{{ exam }}">
+  <h2 class="h5">{{ target.label }} &middot; {{ exam }}</h2>
+  <div class="table-responsive"><table class="table table-sm align-middle">
+    <thead><tr><th>Roll</th><th>Student</th><th style="width:170px">Marks obtained</th><th>Out of</th><th>Current grade</th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      <td>{{ r.s.rollNumber }}</td><td>{{ r.s.name }}</td>
+      {% if r.m %}
+      <td><input class="form-control form-control-sm {{ 'is-invalid' if errors.get(r.m.markId) }}" name="mark_{{ r.m.markId }}" value="{{ r.entered }}" inputmode="numeric" pattern="[0-9]{1,3}" required aria-label="Marks for {{ r.s.name }}">
+        {% if errors.get(r.m.markId) %}<div class="invalid-feedback">{{ errors[r.m.markId] }}</div>{% endif %}</td>
+      <td>{{ r.m.maximumMarks }}</td><td>{{ grade_badge(r.m.grade) }} <span class="text-muted small">{{ r.m.percentage }}%</span></td>
+      {% else %}<td colspan="3" class="text-muted">No marks record exists for this student, so none can be edited.</td>{% endif %}
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="text-muted small">Percentage and grade are recalculated automatically. Previous values are kept in the audit log.</p>
+  <button class="btn btn-primary">Save changes</button>
+</form>
+{% endif %}{% endif %}
+{% endblock %}
